@@ -1,31 +1,26 @@
 import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+
+// Mock stats para testing local sin base de datos
+const mockStats = {
+    daily: [
+        { date: '2026-01-01', count: 5 },
+        { date: '2026-01-02', count: 8 },
+        { date: '2026-01-03', count: 12 },
+        { date: '2026-01-04', count: 7 },
+        { date: '2026-01-05', count: 15 },
+        { date: '2026-01-06', count: 10 }
+    ],
+    categories: [
+        { name: 'Consulta Productos', value: 25 },
+        { name: 'Consulta Envíos', value: 12 },
+        { name: 'Producto Visto', value: 18 },
+        { name: 'Test Evento', value: 5 }
+    ]
+};
 
 export async function GET() {
-    try {
-        // Stats de Mensajes por día
-        const dailyStats = await query(`
-      SELECT TO_CHAR(timestamp, 'DD/MM') as date, COUNT(*) as count
-      FROM haminos_chat_logs
-      GROUP BY date
-      ORDER BY MIN(timestamp) ASC
-      LIMIT 7
-    `);
+    // Simular un pequeño delay como si fuera una consulta real
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Stats de Categorías (basado en eventos de tracking)
-        const categoryStats = await query(`
-      SELECT event as name, COUNT(*) as value
-      FROM haminos_chat_tracking
-      GROUP BY event
-      ORDER BY value DESC
-    `);
-
-        return NextResponse.json({
-            daily: dailyStats.rows,
-            categories: categoryStats.rows
-        });
-    } catch (error: any) {
-        console.error('Error fetching stats:', error);
-        return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
-    }
+    return NextResponse.json(mockStats);
 }
