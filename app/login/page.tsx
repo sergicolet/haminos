@@ -38,17 +38,17 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-zinc-950 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-[#fafafa]  p-4">
             <div className="w-full max-w-[400px] space-y-8">
                 <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-black dark:bg-white rounded-2xl mb-4 shadow-xl">
-                        <Database className="text-white dark:text-black w-8 h-8" />
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-black  rounded-2xl mb-4 shadow-xl">
+                        <Database className="text-white  w-8 h-8" />
                     </div>
                     <h1 className="text-3xl font-black tracking-tighter">HAMINOS ADMIN</h1>
                     <p className="text-zinc-500 mt-2 text-sm">Introduce tus credenciales para acceder</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6">
+                <form onSubmit={handleSubmit} className="bg-white  p-8 rounded-[2rem] border border-zinc-200  shadow-xl space-y-6">
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Usuario</label>
@@ -58,7 +58,7 @@ export default function LoginPage() {
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-zinc-50  border border-zinc-100  rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black :ring-white transition-all"
                                     placeholder="Tu usuario"
                                 />
                             </div>
@@ -72,7 +72,7 @@ export default function LoginPage() {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-zinc-50  border border-zinc-100  rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black :ring-white transition-all"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -80,15 +80,15 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl">
-                            <p className="text-red-600 dark:text-red-400 text-xs font-bold text-center italic">{error}</p>
+                        <div className="p-3 bg-red-50  border border-red-100  rounded-xl">
+                            <p className="text-red-600  text-xs font-bold text-center italic">{error}</p>
                         </div>
                     )}
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-black dark:bg-white text-white dark:text-black py-4 rounded-xl font-black text-sm tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                        className="w-full bg-black  text-white  py-4 rounded-xl font-black text-sm tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                     >
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'ENTRAR AL PANEL'}
                     </button>
