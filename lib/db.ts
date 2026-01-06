@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: false // Desactivamos SSL ya que el servidor de Hetzner no lo soporta directamente
 });
 
 export const query = (text: string, params?: any[]) => pool.query(text, params);
