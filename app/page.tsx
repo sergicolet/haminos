@@ -158,7 +158,7 @@ function splitBotMessage(content: string): string[] {
     if (introText) parts.push(introText);
 
     const rest = content.substring(introEnd);
-    const lastLinkMatch = rest.match(/.*🛒\s*\[.*?\]\(.*?\)/s);
+    const lastLinkMatch = rest.match(/[\s\S]*🛒\s*\[.*?\]\(.*?\)/);
 
     if (lastLinkMatch) {
       const productsEnd = lastLinkMatch[0].length;
