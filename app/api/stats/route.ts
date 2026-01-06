@@ -14,13 +14,14 @@ export async function GET() {
       ORDER BY date ASC
     `);
 
-        // Obtener categorías de eventos de tracking
+        // Obtener categorías (leyendo de la columna 'category' directamente)
         const categoriesResult = await query(`
       SELECT 
-        event as name,
+        category as name,
         COUNT(*) as value
-      FROM haminos_chat_tracking
-      GROUP BY event
+      FROM haminos_chat_logs
+      WHERE category IS NOT NULL
+      GROUP BY category
       ORDER BY value DESC
     `);
 
@@ -30,7 +31,8 @@ export async function GET() {
                 count: parseInt(row.count)
             })),
             categories: categoriesResult.rows.map(row => ({
-                name: row.name,
+                // Limpiamos posibles saltos de línea o espacios extra que el LLM haya podido meter
+                name: row?.name?.replace(/[\n\r]/g, '')?.trim() || 'Desconocido',
                 value: parseInt(row.value)
             }))
         });
