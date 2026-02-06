@@ -64,9 +64,9 @@ function convertTrackingToButtons(html: string) {
 }
 
 function convertProductsToCards(html: string) {
-    const regex = /\[PRODUCT\](.*?)\[\/PRODUCT\]/gs;
+    const regex = /\[PRODUCT\]([\s\S]*?)\[\/PRODUCT\]/g;
     const matches = [...html.matchAll(regex)];
-    
+
     if (matches.length === 0) return html;
 
     let products: any[] = [];
@@ -84,7 +84,7 @@ function convertProductsToCards(html: string) {
     if (products.length === 0) return html;
 
     let cardsHtml = `<div class="my-4 overflow-x-auto pb-4 scrollbar-hide flex gap-3 snap-x">`;
-    
+
     products.forEach((p: any) => {
         cardsHtml += `
       <div class="bg-white rounded-xl shadow-sm border border-zinc-100 min-w-[220px] w-[220px] flex-shrink-0 overflow-hidden snap-start flex flex-col group hover:shadow-md transition-shadow">
@@ -113,10 +113,10 @@ function convertProductsToCards(html: string) {
 
     const firstMatch = matches[0];
     const lastMatch = matches[matches.length - 1];
-    
+
     const startIdx = html.indexOf(firstMatch[0]);
     const endIdx = html.lastIndexOf(lastMatch[0]) + lastMatch[0].length;
-    
+
     return html.substring(0, startIdx) + cardsHtml + html.substring(endIdx);
 }
 
@@ -129,28 +129,28 @@ function parseChatContent(content: string) {
 
 function splitBotMessage(content: string): string[] {
     const hasProduct = content.includes("[PRODUCT]") && content.includes("[/PRODUCT]");
-    
+
     if (hasProduct) {
         const parts: string[] = [];
         const productStart = content.indexOf("[PRODUCT]");
         const productEnd = content.lastIndexOf("[/PRODUCT]") + 10; // length of [/PRODUCT]
-        
+
         // Intro text
         const introText = content.substring(0, productStart).trim();
         if (introText) {
             parts.push(introText);
         }
-        
+
         // Product block (keep all products together in one block)
         const productBlock = content.substring(productStart, productEnd);
         parts.push(productBlock);
-        
+
         // After text
         const afterText = content.substring(productEnd).trim();
         if (afterText) {
             parts.push(afterText);
         }
-        
+
         return parts;
     }
 
