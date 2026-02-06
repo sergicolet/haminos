@@ -64,51 +64,60 @@ function convertTrackingToButtons(html: string) {
 }
 
 function convertProductsToCards(html: string) {
-    const regex = /<img[^>]+src="([^"]+)"[^>]*>[\s\S]*?🛍️\s*([^\n💰]+)[\s\S]*?💰\s*Precio:\s*([^\n📦]+)[\s\S]*?📦\s*Stock:\s*([^\n📝]+)[\s\S]*?📝\s*([^\n👉🛒<]+)[\s\S]*?(?:👉\s*)?<a[^>]*href="([^"]*\/products\/[^"]*)"[^>]*>[^<]*<\/a>(?:[\s\S]*?🛒\s*<a[^>]*href="([^"]*)"[^>]*>[^<]*<\/a>)?/gi;
-    let match, products = [], firstIdx = -1, lastEnd = 0;
+    const regex = /\[PRODUCT\](.*?)\[\/PRODUCT\]/gs;
+    const matches = [...html.matchAll(regex)];
+    
+    if (matches.length === 0) return html;
 
-    while ((match = regex.exec(html)) !== null) {
-        if (firstIdx === -1) firstIdx = match.index;
-        lastEnd = match.index + match[0].length;
-        const clean = (t: string) => t ? t.replace(/<br\s*\/?>/gi, "").replace(/&lt;br&gt;/gi, "").replace(/\s+/g, " ").trim() : "";
-        products.push({
-            imgUrl: match[1],
-            title: clean(match[2]),
-            price: clean(match[3]),
-            description: clean(match[5]),
-            url: match[6]
-        });
-    }
+    let products: any[] = [];
+    matches.forEach(match => {
+        try {
+            // Remove <br> if any inside JSON (artifact of parseMarkdown) and trim
+            let jsonStr = match[1].replace(/<br\s*\/?>/gi, "").trim();
+            const p = JSON.parse(jsonStr);
+            products.push(p);
+        } catch (e) {
+            console.error("Error parsing product JSON:", e);
+        }
+    });
 
     if (products.length === 0) return html;
 
-    let cards = `<div class="my-4 overflow-x-auto pb-4 scrollbar-hide flex gap-3 snap-x">`;
-    products.forEach(p => {
-        cards += `
-      <div class="bg-white rounded-xl shadow-sm border border-zinc-100 min-w-[200px] w-[200px] flex-shrink-0 overflow-hidden snap-start flex flex-col">
-        <div class="h-32 bg-zinc-50 flex items-center justify-center p-2">
-           <img src="${p.imgUrl}" alt="${p.title}" class="max-h-full max-w-full object-contain">
+    let cardsHtml = `<div class="my-4 overflow-x-auto pb-4 scrollbar-hide flex gap-3 snap-x">`;
+    
+    products.forEach((p: any) => {
+        cardsHtml += `
+      <div class="bg-white rounded-xl shadow-sm border border-zinc-100 min-w-[220px] w-[220px] flex-shrink-0 overflow-hidden snap-start flex flex-col group hover:shadow-md transition-shadow">
+        <div class="h-40 bg-zinc-50 flex items-center justify-center relative overflow-hidden p-2">
+           <img src="${p.img}" alt="${p.title}" class="w-full h-full object-contain mix-blend-multiply">
         </div>
-        <div class="p-3 flex-1 flex flex-col">
-           <h4 class="text-xs font-bold text-black line-clamp-2 leading-tight h-8 mb-1 uppercase">${p.title}</h4>
-           <div class="text-xs font-bold text-[#c38692] mb-2">${p.price}</div>
-           <p class="text-[10px] text-zinc-500 line-clamp-2 mb-3 flex-1">${p.description}</p>
-           <a href="${p.url}" target="_blank" class="block w-full text-center py-2 bg-black text-white text-[10px] font-bold rounded-lg hover:bg-zinc-800 transition-colors uppercase">
-              Ver Producto
-           </a>
+        <div class="p-3 flex-1 flex flex-col bg-white">
+           <h4 class="text-sm font-bold text-black line-clamp-2 leading-tight mb-2 h-10">${p.title}</h4>
+           <div class="text-[1.1rem] font-bold text-[#c38692] mb-2">${p.price}</div>
+           <p class="text-xs text-zinc-500 line-clamp-3 mb-3 flex-1 leading-relaxed">${p.desc}</p>
+           
+           <div class="flex flex-col gap-2 mt-auto">
+               <a href="${p.url}" target="_blank" class="block w-full text-center py-2.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-zinc-800 transition-colors uppercase tracking-wide">
+                  Ver Producto
+               </a>
+               ${p.cart ? `
+               <a href="${p.cart}" target="_blank" class="block w-full text-center py-2.5 bg-white text-black border-2 border-black text-xs font-bold rounded-lg hover:bg-zinc-50 transition-colors uppercase tracking-wide">
+                  Añadir al Carrito
+               </a>
+               ` : ''}
+           </div>
         </div>
       </div>`;
     });
-    cards += `</div>`;
+    cardsHtml += `</div>`;
 
-    let before = html.substring(0, firstIdx).replace(/(<br\s*\/?>)+$/gi, "");
-    let after = html.substring(lastEnd).replace(/^(<br\s*\/?>)+/gi, "").replace(/🛒\s*<a[^>]*>[^<]*<\/a>/gi, "").replace(/<p>\s*<\/p>/gi, "");
-
-    let result = "";
-    if (before.trim()) result += before;
-    result += cards;
-    if (after.trim()) result += after;
-    return result;
+    const firstMatch = matches[0];
+    const lastMatch = matches[matches.length - 1];
+    
+    const startIdx = html.indexOf(firstMatch[0]);
+    const endIdx = html.lastIndexOf(lastMatch[0]) + lastMatch[0].length;
+    
+    return html.substring(0, startIdx) + cardsHtml + html.substring(endIdx);
 }
 
 function parseChatContent(content: string) {
@@ -119,33 +128,33 @@ function parseChatContent(content: string) {
 }
 
 function splitBotMessage(content: string): string[] {
-    const hasProducts = content.includes("🛍️");
-    if (!hasProducts) return content.split(/\n\n+/).filter(s => s.trim());
-
-    const parts: string[] = [];
-    const productPattern = /!\[.*?\]\(.*?\)/;
-    const firstProductMatch = content.match(productPattern);
-
-    if (firstProductMatch) {
-        const introEnd = content.indexOf(firstProductMatch[0]);
-        const introText = content.substring(0, introEnd).trim();
-        if (introText) parts.push(introText);
-
-        const rest = content.substring(introEnd);
-        const lastLinkMatch = rest.match(/[\s\S]*🛒\s*\[.*?\]\(.*?\)/);
-
-        if (lastLinkMatch) {
-            const productsEnd = lastLinkMatch[0].length;
-            parts.push(rest.substring(0, productsEnd));
-            const afterText = rest.substring(productsEnd).trim();
-            if (afterText && afterText.replace(/\s+/g, "").length > 0) parts.push(afterText);
-        } else {
-            parts.push(rest);
+    const hasProduct = content.includes("[PRODUCT]") && content.includes("[/PRODUCT]");
+    
+    if (hasProduct) {
+        const parts: string[] = [];
+        const productStart = content.indexOf("[PRODUCT]");
+        const productEnd = content.lastIndexOf("[/PRODUCT]") + 10; // length of [/PRODUCT]
+        
+        // Intro text
+        const introText = content.substring(0, productStart).trim();
+        if (introText) {
+            parts.push(introText);
         }
-    } else {
-        parts.push(content);
+        
+        // Product block (keep all products together in one block)
+        const productBlock = content.substring(productStart, productEnd);
+        parts.push(productBlock);
+        
+        // After text
+        const afterText = content.substring(productEnd).trim();
+        if (afterText) {
+            parts.push(afterText);
+        }
+        
+        return parts;
     }
-    return parts;
+
+    return content.split(/\n\n+/).filter(s => s.trim());
 }
 
 // --- INTERFACES ---
