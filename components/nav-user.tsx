@@ -3,7 +3,7 @@
 import {
   IconDotsVertical,
   IconLogout,
-  IconBadgeCheck,
+  IconShieldCheck,
   IconBell,
   IconCreditCard,
   IconSparkles,

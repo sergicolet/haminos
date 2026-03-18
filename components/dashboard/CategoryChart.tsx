@@ -71,8 +71,8 @@ export function CategoryChart({ data, loading }: CategoryChartProps) {
                 paddingAngle={2}
                 dataKey="value"
                 nameKey="name"
-                label={({ name, percent }) => 
-                  `${name}: ${(percent * 100).toFixed(0)}%`
+                label={(props: any) =>
+                  `${props.name ?? ''}: ${((props.percent ?? 0) * 100).toFixed(0)}%`
                 }
                 labelLine={false}
               >
