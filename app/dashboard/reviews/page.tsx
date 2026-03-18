@@ -94,7 +94,7 @@ export default function ReviewsPage() {
         !search ||
         a.content.toLowerCase().includes(searchLow) ||
         a.createdByName.toLowerCase().includes(searchLow) ||
-        a.sessionId.toLowerCase().includes(searchLow)
+        (a.sessionId ?? '').toLowerCase().includes(searchLow)
       return matchFilter && matchSearch
     })
   }, [annotations, filter, search])
