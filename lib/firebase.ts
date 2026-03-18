@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import {
   getAuth,
   GoogleAuthProvider,
@@ -7,9 +7,16 @@ import {
   signInWithEmailLink,
   signInWithPopup,
   onAuthStateChanged,
+  type Auth,
   type User
 } from "firebase/auth";
-import { getFirestore, collection, query, where, getDocs, orderBy, limit, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, Timestamp } from "firebase/firestore";
+import {
+  getFirestore,
+  collection, query, where, getDocs, orderBy, limit,
+  onSnapshot, addDoc, updateDoc, doc, serverTimestamp,
+  deleteDoc, Timestamp,
+  type Firestore
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -20,10 +27,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+// Only initialize Firebase on the client side
+let app: FirebaseApp
+let auth: Auth
+let db: Firestore
+let googleProvider: GoogleAuthProvider
+
+if (typeof window !== 'undefined') {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
+  auth = getAuth(app)
+  db = getFirestore(app)
+  googleProvider = new GoogleAuthProvider()
+} else {
+  // Server-side stubs — never actually called at runtime (only during static generation)
+  app = {} as FirebaseApp
+  auth = {} as Auth
+  db = {} as Firestore
+  googleProvider = {} as GoogleAuthProvider
+}
 
 export type { User };
 export {
@@ -36,5 +57,6 @@ export {
   signInWithEmailLink,
   signInWithPopup,
   onAuthStateChanged,
-  collection, query, where, getDocs, orderBy, limit, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, Timestamp
+  collection, query, where, getDocs, orderBy, limit, onSnapshot,
+  addDoc, updateDoc, doc, serverTimestamp, deleteDoc, Timestamp
 };
