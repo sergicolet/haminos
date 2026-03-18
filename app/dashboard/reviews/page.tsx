@@ -281,7 +281,7 @@ export default function ReviewsPage() {
                           <div className="flex items-center gap-2 shrink-0">
                             {/* View chat button */}
                             <button
-                              onClick={() => openAnnotation(ann.sessionId)}
+                              onClick={() => openAnnotation(ann.sessionId ?? '')}
                               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
                             >
                               <IconExternalLink className="size-3.5" />
