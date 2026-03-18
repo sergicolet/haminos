@@ -6,6 +6,7 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   signInWithPopup,
+  signInWithEmailAndPassword,
   onAuthStateChanged,
   type Auth,
   type User
@@ -56,6 +57,7 @@ export {
   isSignInWithEmailLink,
   signInWithEmailLink,
   signInWithPopup,
+  signInWithEmailAndPassword,
   onAuthStateChanged,
   collection, query, where, getDocs, orderBy, limit, onSnapshot,
   addDoc, updateDoc, doc, serverTimestamp, deleteDoc, Timestamp
