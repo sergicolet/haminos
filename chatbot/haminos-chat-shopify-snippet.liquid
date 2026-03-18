@@ -1,0 +1,452 @@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+    #haminosChat * { box-sizing: border-box !important; margin: 0 !important; padding: 0 !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; }
+    #haminosChat { --haminos-primary: #000000; --haminos-secondary: #c38692; --haminos-chat-bg: #FFFFFF; --haminos-chat-bg-secondary: #F5F5F5; --haminos-chat-border: rgba(0,0,0,0.1); }
+    #haminosChat .haminos-chat-toggle { position: fixed !important; bottom: 24px !important; right: 24px !important; width: 64px !important; height: 64px !important; border-radius: 50% !important; background: #000000 !important; border: none !important; cursor: pointer !important; box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 999999 !important; animation: haminos-pulse-glow 2s ease-in-out infinite !important; }
+    #haminosChat .haminos-chat-toggle:hover { transform: scale(1.1) !important; }
+    #haminosChat .haminos-chat-toggle svg { width: 28px !important; height: 28px !important; fill: white !important; }
+    #haminosChat .haminos-chat-toggle.open svg.haminos-chat-icon { display: none !important; }
+    #haminosChat .haminos-chat-toggle svg.haminos-close-icon { display: none !important; }
+    #haminosChat .haminos-chat-toggle.open svg.haminos-close-icon { display: block !important; }
+    @keyframes haminos-pulse-glow { 0%,100% { box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 0 rgba(0,0,0,0.3); } 50% { box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 12px rgba(0,0,0,0); } }
+    #haminosChat .haminos-chat-window { position: fixed !important; bottom: 100px !important; right: 24px !important; width: 420px !important; height: 680px !important; max-height: calc(100vh - 140px) !important; background: #FFFFFF !important; border-radius: 20px !important; border: 1px solid rgba(0,0,0,0.1) !important; box-shadow: 0 25px 80px rgba(0,0,0,0.5) !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; z-index: 999998 !important; opacity: 0 !important; visibility: hidden !important; transform: translateY(20px) scale(0.95) !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; }
+    #haminosChat .haminos-chat-window.open { opacity: 1 !important; visibility: visible !important; transform: translateY(0) scale(1) !important; }
+    @media (max-width: 480px) { #haminosChat .haminos-chat-window { width: 95vw !important; height: 78vh !important; left: 2.5vw !important; right: 2.5vw !important; bottom: 90px !important; border-radius: 12px !important; } #haminosChat .haminos-chat-toggle { right: 16px !important; bottom: 16px !important; width: 56px !important; height: 56px !important; } #haminosChat .haminos-carousel-nav { display: none !important; } }
+    #haminosChat .haminos-chat-header { padding: 20px 24px !important; background: #000000 !important; display: flex !important; align-items: center !important; gap: 14px !important; }
+    #haminosChat .haminos-header-avatar { width: 48px !important; height: 48px !important; border-radius: 50% !important; background: #000000 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; }
+    #haminosChat .haminos-header-avatar::after { content: '' !important; position: absolute !important; bottom: 2px !important; right: 2px !important; width: 12px !important; height: 12px !important; background: #c38692 !important; border-radius: 50% !important; border: 2px solid #F5F5F5 !important; }
+    #haminosChat .haminos-header-info { flex: 1 !important; }
+    #haminosChat .haminos-header-title { font-family: 'Cormorant Garamond', serif !important; font-size: 1.6rem !important; font-weight: 600 !important; letter-spacing: 0.15em !important; text-transform: uppercase !important; color: #FFFFFF !important; }
+    #haminosChat .haminos-header-status { font-size: 1.1rem !important; color: #FFFFFF !important; opacity: 0.8 !important; display: flex !important; align-items: center !important; gap: 6px !important; }
+    #haminosChat .haminos-status-dot { width: 8px !important; height: 8px !important; background: #4CAF50 !important; border-radius: 50% !important; animation: haminos-status-pulse 1.5s ease-in-out infinite !important; }
+    #haminosChat .haminos-header-logo { font-family: 'Cormorant Garamond', serif !important; font-size: 1.2rem !important; font-weight: 600 !important; letter-spacing: 0.1em !important; color: #FFFFFF !important; }
+    @keyframes haminos-status-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    #haminosChat .haminos-header-close { background: none !important; border: none !important; color: #FFFFFF !important; cursor: pointer !important; padding: 4px !important; display: flex !important; align-items: center !important; justify-content: center !important; opacity: 0.8 !important; }
+    #haminosChat .haminos-header-close:hover { opacity: 1 !important; }
+    #haminosChat .haminos-chat-messages { flex: 1 !important; overflow-y: auto !important; padding: 20px !important; display: flex !important; flex-direction: column !important; gap: 16px !important; scroll-behavior: smooth !important; background: #FFFFFF !important; }
+    #haminosChat .haminos-chat-messages::-webkit-scrollbar { width: 6px !important; }
+    #haminosChat .haminos-chat-messages::-webkit-scrollbar-track { background: transparent !important; }
+    #haminosChat .haminos-chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1) !important; border-radius: 3px !important; }
+    #haminosChat .haminos-message { max-width: 85% !important; animation: haminos-message-appear 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; }
+    @keyframes haminos-message-appear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    #haminosChat .haminos-message.user { align-self: flex-end !important; }
+    #haminosChat .haminos-message.bot { align-self: flex-start !important; }
+    #haminosChat .haminos-message-content { padding: 10px 14px !important; border-radius: 12px !important; font-size: 1.25rem !important; line-height: 1.5 !important; word-wrap: break-word !important; }
+    #haminosChat .haminos-message.user .haminos-message-content { background: #000000 !important; color: white !important; border-bottom-right-radius: 4px !important; }
+    #haminosChat .haminos-message.bot .haminos-message-content { background: #c38692 !important; color: #FFFFFF !important; border-bottom-left-radius: 4px !important; }
+    #haminosChat .haminos-message-content p { margin: 0 0 10px 0 !important; }
+    #haminosChat .haminos-message-content p:last-child { margin-bottom: 0 !important; }
+    #haminosChat .haminos-message-content strong { color: #FFFFFF !important; font-weight: 700 !important; }
+    #haminosChat .haminos-message-content a { color: #FFFFFF !important; text-decoration: underline !important; font-weight: 500 !important; }
+    #haminosChat .haminos-message-content img { max-width: 100% !important; border-radius: 12px !important; margin: 12px 0 !important; }
+    #haminosChat .haminos-products-container { position: relative !important; }
+    #haminosChat .haminos-products-grid { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 12px !important; overflow-x: auto !important; overflow-y: hidden !important; scroll-snap-type: x mandatory !important; -webkit-overflow-scrolling: touch !important; padding: 8px 2px !important; scrollbar-width: none !important; scroll-behavior: smooth !important; }
+    #haminosChat .haminos-products-grid::-webkit-scrollbar { display: none !important; }
+    #haminosChat .haminos-carousel-nav { position: absolute !important; top: 30% !important; transform: translateY(-50%) !important; width: 32px !important; height: 32px !important; border-radius: 50% !important; background: rgba(255,255,255,0.7) !important; backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; border: 1px solid rgba(255,255,255,0.3) !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 10 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; transition: all 0.2s ease !important; }
+    #haminosChat .haminos-carousel-nav:hover { background: rgba(255,255,255,0.9) !important; transform: translateY(-50%) scale(1.1) !important; box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important; }
+    #haminosChat .haminos-carousel-nav.prev { left: -8px !important; }
+    #haminosChat .haminos-carousel-nav.next { right: -8px !important; }
+    #haminosChat .haminos-carousel-nav svg { width: 16px !important; height: 16px !important; fill: #000000 !important; }
+    #haminosChat .haminos-carousel-dots { display: flex !important; justify-content: center !important; gap: 8px !important; padding: 10px 0 4px 0 !important; }
+    #haminosChat .haminos-carousel-dot { width: 8px !important; height: 8px !important; border-radius: 50% !important; background: rgba(255,255,255,0.4) !important; border: none !important; cursor: pointer !important; transition: all 0.2s ease !important; }
+    #haminosChat .haminos-carousel-dot.active { background: #FFFFFF !important; transform: scale(1.2) !important; }
+    #haminosChat .haminos-product-card { flex: 0 0 220px !important; min-width: 220px !important; max-width: 220px !important; scroll-snap-align: start !important; background: #FFFFFF !important; border-radius: 12px !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+    #haminosChat .haminos-product-card-image { width: 100% !important; height: 160px !important; object-fit: contain !important; background: #F5F5F5 !important; display: block !important; border: none !important; }
+    #haminosChat .haminos-product-card-body { padding: 12px 10px !important; flex: 1 !important; display: flex !important; flex-direction: column !important; background: #FFFFFF !important; }
+    #haminosChat .haminos-product-card-title { font-size: 0.95rem !important; font-weight: 700 !important; color: #000000 !important; margin: 0 0 8px 0 !important; line-height: 1.3 !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
+    #haminosChat .haminos-product-card-price { font-size: 1.1rem !important; font-weight: 700 !important; color: #c38692 !important; margin-bottom: 8px !important; }
+    #haminosChat .haminos-product-card-description { font-size: 0.8rem !important; color: #666666 !important; line-height: 1.4 !important; margin-bottom: 12px !important; flex: 1 !important; display: -webkit-box !important; -webkit-line-clamp: 3 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
+    #haminosChat .haminos-product-card-buttons { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+    #haminosChat .haminos-product-card-btn { width: 100% !important; padding: 10px 12px !important; border: none !important; border-radius: 8px !important; font-size: 0.85rem !important; font-weight: 600 !important; cursor: pointer !important; text-decoration: none !important; text-align: center !important; display: block !important; }
+    #haminosChat .haminos-product-card-btn.primary { background: #000000 !important; color: #FFFFFF !important; }
+    #haminosChat .haminos-product-card-btn.secondary { background: #FFFFFF !important; color: #000000 !important; border: 2px solid #000000 !important; }
+    #haminosChat .haminos-tracking-btn { display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 12px 20px !important; background: #FFFFFF !important; color: #000000 !important; border: 2px solid #000000 !important; border-radius: 8px !important; font-size: 0.9rem !important; font-weight: 600 !important; text-decoration: none !important; margin: 12px 0 !important; transition: all 0.2s ease !important; }
+    #haminosChat .haminos-tracking-btn:hover { background: #000000 !important; color: #FFFFFF !important; }
+    #haminosChat .haminos-tracking-btn svg { width: 18px !important; height: 18px !important; fill: currentColor !important; }
+    #haminosChat .haminos-typing-indicator { display: flex !important; align-items: center !important; gap: 6px !important; padding: 16px 20px !important; background: #c38692 !important; border-radius: 12px !important; border-bottom-left-radius: 4px !important; max-width: 80px !important; align-self: flex-start !important; }
+    #haminosChat .haminos-typing-indicator span { width: 8px !important; height: 8px !important; background: #000000 !important; border-radius: 50% !important; animation: haminos-typing-bounce 1.4s ease-in-out infinite !important; }
+    #haminosChat .haminos-typing-indicator span:nth-child(2) { animation-delay: 0.2s !important; }
+    #haminosChat .haminos-typing-indicator span:nth-child(3) { animation-delay: 0.4s !important; }
+    @keyframes haminos-typing-bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+    #haminosChat .haminos-chat-input-container { padding: 16px 20px !important; background: #F5F5F5 !important; border-top: 1px solid rgba(0,0,0,0.1) !important; }
+    #haminosChat .haminos-chat-input-wrapper { display: flex !important; align-items: center !important; gap: 12px !important; background: #FFFFFF !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 12px !important; padding: 4px 8px 4px 16px !important; }
+    #haminosChat .haminos-chat-input-wrapper:focus-within { border-color: #000000 !important; box-shadow: 0 0 0 3px rgba(0,0,0,0.1) !important; }
+    #haminosChat .haminos-chat-input { flex: 1 !important; background: transparent !important; border: none !important; color: #000000 !important; font-size: 16px !important; padding: 12px 0 !important; outline: none !important; resize: none !important; max-height: 100px !important; }
+    #haminosChat .haminos-chat-input::placeholder { color: #888888 !important; }
+    #haminosChat .haminos-chat-send-btn { width: 44px !important; height: 44px !important; border-radius: 10px !important; background: #000000 !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
+    #haminosChat .haminos-chat-send-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
+    #haminosChat .haminos-chat-send-btn svg { width: 20px !important; height: 20px !important; fill: white !important; }
+    #haminosChat .haminos-chat-footer { text-align: center !important; padding: 8px !important; background: #F5F5F5 !important; }
+    #haminosChat .haminos-chat-footer a { color: #888888 !important; font-size: 0.75rem !important; text-decoration: none !important; }
+    #haminosChat .haminos-welcome-screen { flex: 1 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 40px 24px !important; text-align: center !important; background: #FFFFFF !important; }
+    #haminosChat .haminos-welcome-avatar { width: 80px !important; height: 80px !important; border-radius: 50% !important; background: #000000 !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 24px !important; }
+    #haminosChat .haminos-welcome-title { font-size: 2.2rem !important; font-weight: 700 !important; color: #000000 !important; margin: 0 0 12px 0 !important; }
+    #haminosChat .haminos-welcome-subtitle { font-size: 1.3rem !important; color: #555555 !important; margin: 0 0 24px 0 !important; line-height: 1.6 !important; }
+    #haminosChat .haminos-quick-actions { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; justify-content: center !important; margin-top: 8px !important; width: 100% !important; }
+    #haminosChat .haminos-quick-action-btn { padding: 8px 14px !important; background: #EEEEEE !important; border: 1px solid rgba(0,0,0,0.1) !important; border-radius: 20px !important; color: #555555 !important; font-size: 1.25rem !important; cursor: pointer !important; }
+    #haminosChat .haminos-quick-action-btn:hover { background: #000000 !important; border-color: #000000 !important; color: white !important; }
+    #haminosChat .haminos-chat-messages { position: relative !important; }
+    #haminosChat .haminos-cart-btn { position: sticky !important; bottom: 10px !important; left: 50% !important; transform: translateX(-50%) !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; padding: 10px 20px !important; margin: 10px auto !important; background: rgba(120,120,128,0.24) !important; backdrop-filter: blur(20px) saturate(180%) !important; -webkit-backdrop-filter: blur(20px) saturate(180%) !important; color: #000000 !important; border: 1px solid rgba(255,255,255,0.18) !important; border-radius: 22px !important; font-size: 0.9rem !important; font-weight: 600 !important; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif !important; text-decoration: none !important; transition: all 0.2s ease !important; cursor: pointer !important; z-index: 100 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; width: fit-content !important; }
+    #haminosChat .haminos-cart-btn:hover { background: rgba(120,120,128,0.36) !important; }
+    #haminosChat .haminos-cart-btn svg { width: 16px !important; height: 16px !important; fill: currentColor !important; }
+    #haminosChat .haminos-tracking-btn { display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 10px 18px !important; background: #000000 !important; color: #FFFFFF !important; border: 1px solid #000000 !important; border-radius: 20px !important; font-size: 0.95rem !important; font-weight: 500 !important; text-decoration: none !important; margin: 8px 0 !important; transition: all 0.2s ease !important; }
+    #haminosChat .haminos-tracking-btn:hover { background: #333333 !important; }
+    #haminosChat .haminos-tracking-btn svg { width: 16px !important; height: 16px !important; fill: currentColor !important; }
+    #haminosChat .haminos-whatsapp-btn { display: inline-flex !important; align-items: center !important; gap: 10px !important; padding: 12px 20px !important; background: #000000 !important; color: #FFFFFF !important; border: none !important; border-radius: 12px !important; font-size: 0.95rem !important; font-weight: 600 !important; text-decoration: none !important; margin: 10px 0 !important; transition: all 0.2s ease !important; cursor: pointer !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; }
+    #haminosChat .haminos-whatsapp-btn:hover { background: #333333 !important; transform: translateY(-1px) !important; box-shadow: 0 6px 16px rgba(0,0,0,0.3) !important; }
+    #haminosChat .haminos-whatsapp-btn::before { content: '' !important; display: inline-block !important; width: 20px !important; height: 20px !important; flex-shrink: 0 !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2325D366'%3E%3Cpath d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E") !important; background-size: contain !important; background-repeat: no-repeat !important; }
+    </style>
+
+    <div id="haminosChat">
+        <button class="haminos-chat-toggle" id="haminosChatToggle">
+            <svg class="haminos-chat-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+            <svg class="haminos-close-icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <div class="haminos-chat-window" id="haminosChatWindow">
+            <div class="haminos-chat-header">
+                <div class="haminos-header-avatar"><span class="haminos-header-logo">H</span></div>
+                <div class="haminos-header-info">
+                    <h3 class="haminos-header-title">HAMINOS</h3>
+                    <p class="haminos-header-status"><span class="haminos-status-dot"></span>En línea</p>
+                </div>
+                <button class="haminos-header-close" id="haminosHeaderClose">
+                    <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <div class="haminos-chat-messages" id="haminosChatMessages">
+                <div class="haminos-welcome-screen" id="haminosWelcomeScreen">
+
+                    <h2 class="haminos-welcome-title">¡Hola! 👋</h2>
+                    <p class="haminos-welcome-subtitle">Soy tu asesor experto en dermocosmética.<br>¿En qué puedo ayudarte hoy?</p>
+                    <div class="haminos-quick-actions" id="haminosQuickActions">
+                        <button class="haminos-quick-action-btn" data-message="Ver productos para labios">💋 Labios</button>
+                        <button class="haminos-quick-action-btn" data-message="Productos para cabello">💇 Cabello</button>
+                        <button class="haminos-quick-action-btn" data-message="Tratamiento para estrías">✨ Estrías</button>
+                        <button class="haminos-quick-action-btn" data-message="Tratamiento facial">🧴 Facial</button>
+                        <button class="haminos-quick-action-btn" data-message="Productos para barba">🧔 Barba</button>
+                        <button class="haminos-quick-action-btn" data-message="Tratamiento anti-edad">🌟 Antiedad</button>
+                        <button class="haminos-quick-action-btn" data-message="Tratamiento para manchas en la piel">🎯 Manchas</button>
+                        <button class="haminos-quick-action-btn" data-message="Tratamiento para arrugas">〰️ Arrugas</button>
+                        <button class="haminos-quick-action-btn" data-message="Tratamiento para líneas de expresión">✨ Líneas expresión</button>
+                        <button class="haminos-quick-action-btn" data-message="Estado de mi pedido">📦 Mi pedido</button>
+                    </div>
+                </div>
+            </div>
+            <div class="haminos-chat-input-container">
+                <div class="haminos-chat-input-wrapper">
+                    <textarea class="haminos-chat-input" id="haminosChatInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+                    <button class="haminos-chat-send-btn" id="haminosSendBtn"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+                </div>
+            </div>
+            <div class="haminos-chat-footer"><a href="https://haminos.es" target="_blank">Powered by HAMINOS®</a></div>
+        </div>
+    </div>
+
+    <script>
+    window.haminosTrackClick=function(event,handle,title,url){const webhookUrl="https://haminos-ecom-n8n.5pbmxd.easypanel.host/webhook/1e929533-3402-4e43-a65d-2a0333380cf0/chat";fetch(webhookUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"track",event:event,sessionId:localStorage.getItem("haminos_chat_session")||"",productHandle:handle,productTitle:title,productUrl:url,timestamp:new Date().toISOString(),page:window.location.href})}).catch(()=>{});};
+    window.haminosViewProduct=function(handle,title,url){haminosTrackClick("view_product",handle,title,url);window.open(url,"_blank");};
+    window.haminosAddToCart=async function(handle,title){haminosTrackClick("add_to_cart",handle,title||"","");if(!handle)return;try{const t=await fetch("/products/"+handle+".js");if(!t.ok)throw new Error("Producto no encontrado");const o=await t.json(),n=o.variants[0]?.id;if(!n)throw new Error("No se encontró variante");const a=await fetch("/cart/add.js",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:[{id:n,quantity:1}]})});if(!a.ok)throw new Error("Error al añadir");sessionStorage.setItem("haminos_chat_was_open","true");sessionStorage.setItem("haminos_show_cart_btn","true");window.location.reload();}catch(e){alert("No se pudo añadir el producto al carrito.")}};
+    window.haminosShowCartButton=function(){const messagesContainer=document.getElementById("haminosChatMessages");if(!messagesContainer||document.querySelector(".haminos-cart-btn"))return;const btn=document.createElement("a");btn.href="/cart";btn.className="haminos-cart-btn";btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>Ir al carrito';btn.onclick=function(){sessionStorage.removeItem("haminos_show_cart_btn");};messagesContainer.appendChild(btn);messagesContainer.scrollTop=messagesContainer.scrollHeight;};
+    const haminosNotifStyle=document.createElement("style");haminosNotifStyle.textContent="@keyframes haminosFadeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}@keyframes haminosFadeOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(10px)}}",document.head.appendChild(haminosNotifStyle);
+    (function(){"use strict";
+
+    const CONFIG={webhookUrl:"https://haminos-ecom-n8n.5pbmxd.easypanel.host/webhook/1e929533-3402-4e43-a65d-2a0333380cf0/chat",sessionKey:"haminos_chat_session",historyKey:"haminos_chat_history",maxHistoryAge:7*24*60*60*1000};
+    const t=document.getElementById("haminosChatToggle"),o=document.getElementById("haminosChatWindow"),n=document.getElementById("haminosChatMessages"),a=document.getElementById("haminosChatInput"),s=document.getElementById("haminosSendBtn"),i=document.getElementById("haminosWelcomeScreen"),r=document.getElementById("haminosHeaderClose");
+    if(sessionStorage.getItem("haminos_chat_was_open")==="true"){sessionStorage.removeItem("haminos_chat_was_open");setTimeout(()=>{o.classList.add("open");t.classList.add("open");},100);}
+    if(sessionStorage.getItem("haminos_show_cart_btn")==="true"){setTimeout(()=>{window.haminosShowCartButton();},200);}
+    let sessionId=localStorage.getItem(CONFIG.sessionKey)||function(){const id="haminos_"+Date.now()+"_"+Math.random().toString(36).substr(2,9);localStorage.setItem(CONFIG.sessionKey,id);return id}();
+    let isLoading=false;
+    let chatHistory=[];
+
+    function loadHistory(){
+        try{
+            const saved=localStorage.getItem(CONFIG.historyKey);
+            if(saved){
+                const data=JSON.parse(saved);
+                if(data.timestamp&&Date.now()-data.timestamp<CONFIG.maxHistoryAge){
+                    chatHistory=data.messages||[];
+                    return true;
+                }else{
+                    localStorage.removeItem(CONFIG.historyKey);
+                }
+            }
+        }catch(e){}
+        return false;
+    }
+
+    function saveHistory(){
+        try{
+            localStorage.setItem(CONFIG.historyKey,JSON.stringify({timestamp:Date.now(),messages:chatHistory}));
+        }catch(e){}
+    }
+
+    function restoreMessages(){
+        if(chatHistory.length>0){
+            i.style.display="none";
+            chatHistory.forEach(msg=>{
+                createBubble(msg.content,msg.sender,true);
+            });
+            n.scrollTop=n.scrollHeight;
+            setTimeout(()=>{n.querySelectorAll('.haminos-products-container').forEach(c=>{if(!c.dataset.navInit){c.dataset.navInit='1';initCarouselNav(c);}});},100);
+        }
+    }
+
+    function initCarouselNav(container){
+        const grid=container.querySelector('.haminos-products-grid');
+        const cards=grid.querySelectorAll('.haminos-product-card');
+        const dots=container.querySelectorAll('.haminos-carousel-dot');
+        if(cards.length<=1)return;
+        const prevBtn=document.createElement('button');
+        prevBtn.className='haminos-carousel-nav prev';
+        prevBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+        const nextBtn=document.createElement('button');
+        nextBtn.className='haminos-carousel-nav next';
+        nextBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+        container.style.position='relative';
+        container.insertBefore(prevBtn,grid);
+        container.insertBefore(nextBtn,grid.nextSibling);
+        let currentIndex=0;
+        function scrollToCard(idx){
+            if(idx<0)idx=0;
+            if(idx>=cards.length)idx=cards.length-1;
+            currentIndex=idx;
+            cards[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'start'});
+            dots.forEach((d,j)=>d.classList.toggle('active',j===idx));
+        }
+        prevBtn.addEventListener('click',()=>scrollToCard(currentIndex-1));
+        nextBtn.addEventListener('click',()=>scrollToCard(currentIndex+1));
+        dots.forEach((dot,idx)=>{dot.addEventListener('click',()=>scrollToCard(idx));});
+        grid.addEventListener('scroll',()=>{
+            const scrollLeft=grid.scrollLeft;
+            const cardWidth=cards[0].offsetWidth+12;
+            const newIndex=Math.round(scrollLeft/cardWidth);
+            if(newIndex!==currentIndex){currentIndex=newIndex;dots.forEach((d,j)=>d.classList.toggle('active',j===currentIndex));}
+        });
+    }
+
+    function addMessage(content,sender,skipSave){
+        if(sender==="bot"){
+            splitBotMessage(content).forEach(part=>{if(part.trim()){createBubble(part,sender,skipSave);}});
+        }else{
+            createBubble(content,sender,skipSave);
+        }
+        n.scrollTop=n.scrollHeight;
+        setTimeout(()=>{n.querySelectorAll('.haminos-products-container').forEach(c=>{if(!c.dataset.navInit){c.dataset.navInit='1';initCarouselNav(c);}});},100);
+    }
+
+    function splitBotMessage(content){
+        // Check if content contains a JSON product block
+        const hasProduct = content.includes("[PRODUCT]") && content.includes("[/PRODUCT]");
+        
+        if(hasProduct){
+            const parts=[];
+            const productStart = content.indexOf("[PRODUCT]");
+            const productEnd = content.lastIndexOf("[/PRODUCT]") + 10; // length of [/PRODUCT]
+            
+            // Get intro text before the product
+            const introText = content.substring(0, productStart).trim();
+            if(introText){
+                introText.split(/\\n|\n\n|\n/).filter(s=>s.trim()).forEach(p=>parts.push(p.trim()));
+            }
+            
+            // The product block (includes all products between the first and last tags)
+            const productBlock = content.substring(productStart, productEnd);
+            parts.push(productBlock);
+            
+            // Text after the last product block
+            let afterProduct = content.substring(productEnd).trim();
+            afterProduct = afterProduct.replace(/^\\n|^\n/,"").trim();
+            if(afterProduct){
+                afterProduct.split(/\\n|\n\n|\n/).filter(s=>s.trim()).forEach(p=>parts.push(p.trim()));
+            }
+            
+            return parts.filter(p=>p.length>0);
+        }
+        
+        // No product - split by newlines (both escaped \\n and actual \n)
+        return content.split(/\\n|\n\n|\n/).map(s=>s.trim()).filter(s=>s.length>0);
+    }
+
+    function createBubble(content,sender,skipSave){
+        const div=document.createElement("div");
+        div.className="haminos-message "+sender;
+        const contentDiv=document.createElement("div");
+        contentDiv.className="haminos-message-content";
+        contentDiv.innerHTML=parseContent(content);
+        // Attach WhatsApp button click handlers (using spans to avoid Shopify/Transcy stripping <a> tags)
+        contentDiv.querySelectorAll('.haminos-whatsapp-btn[data-wa-url]').forEach(function(btn){
+            btn.addEventListener('click', function(){ window.open(btn.getAttribute('data-wa-url'), '_blank'); });
+        });
+        div.appendChild(contentDiv);
+        n.appendChild(div);
+        if(!skipSave){
+            chatHistory.push({content:content,sender:sender});
+            saveHistory();
+        }
+    }
+
+    function parseContent(content){
+        let html=parseMarkdown(content);
+        html=convertTrackingToButtons(html);
+        return convertProductsToCards(html);
+    }
+
+
+
+    function convertTrackingToButtons(html){
+        const trackingDomains=[
+            'cttexpress.com','seur.com','dpd.com','dpd.es','gls-spain.es','gls-group.eu',
+            'mrw.es','correosexpress.com','correos.es','nacex.es','sending.es','tipsa.com',
+            'dhl.com','dhl.es','ups.com','fedex.com','envialia.com','colissimo','laposte.fr',
+            '17track.net','aftership.com','trackingmore.com','parcelmonitor.com'
+        ];
+        const urlRegex=/(https?:\/\/[^\s<>"]+)/gi;
+        return html.replace(urlRegex, function(url){
+            const isTracking=trackingDomains.some(d=>url.toLowerCase().includes(d));
+            if(isTracking){
+                return `<a href="${url}" target="_blank" class="haminos-tracking-btn"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>Ver seguimiento</a>`;
+            }
+            return url;
+        });
+    }
+
+    function parseMarkdown(text){
+        if(!text)return"";
+        let h=text;
+        // Remove horizontal rules
+        h=h.replace(/\n---\n/g,"\n");
+        h=h.replace(/^---$/gm,"");
+        h=h.replace(/---/g,"");
+        // First, process markdown BEFORE escaping (order matters!)
+        // IMPORTANT: Use %%..%% instead of {{ }} to avoid Liquid template engine conflicts
+        // Images: ![alt](url) - use §§ as separator to avoid conflicts with : in URLs
+        h=h.replace(/!\[(.*?)\]\((.*?)\)/g,'%%IMG§§$2§§$1%%');
+        // Links: [text](url)
+        h=h.replace(/\[(.*?)\]\((.*?)\)/g,'%%LINK§§$2§§$1%%');
+        // Bold: **text**
+        h=h.replace(/\*\*(.*?)\*\*/g,'%%BOLD§§$1%%');
+        // Italic: *text*
+        h=h.replace(/\*(.*?)\*/g,'%%ITALIC§§$1%%');
+        // Now escape any remaining HTML-like characters
+        h=h.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        // Restore markdown elements as HTML
+        h=h.replace(/%%IMG§§(.*?)§§(.*?)%%/g,'<img src="$1" alt="$2" style="max-width:100%;border-radius:8px;margin:8px 0;">');
+        // Restore links — detect wa.me and output as <span> button (not <a>) to avoid Shopify/Transcy stripping
+        h=h.replace(/%%LINK§§(.*?)§§(.*?)%%/g, function(m,url,txt){
+            if(url.indexOf('wa.me')!==-1){
+                return '<span class="haminos-whatsapp-btn" data-wa-url="'+url+'">'+txt+'</span>';
+            }
+            return '<a href="'+url+'" target="_blank">'+txt+'</a>';
+        });
+        // Fallback: catch bare wa.me URLs not in markdown link format
+        h=h.replace(/(^|[\s>])(https?:\/\/wa\.me\/[^\s<"]+)/gi, function(m,pre,url){
+            return pre+'<span class="haminos-whatsapp-btn" data-wa-url="'+url+'">Abrir WhatsApp</span>';
+        });
+        h=h.replace(/%%BOLD§§(.*?)%%/g,'<strong>$1</strong>');
+        h=h.replace(/%%ITALIC§§(.*?)%%/g,'<em>$1</em>');
+        // Line breaks
+        h=h.replace(/\\n/g,"<br>");
+        h=h.replace(/\n/g,"<br>");
+        // Clean up multiple breaks
+        h=h.replace(/(<br>\s*)+---\s*(<br>\s*)+/gi,"<br>");
+        // Paragraphs
+        if(h.split("<br><br>").length>1){h=h.split("<br><br>").map(p=>"<p>"+p+"</p>").join("");}
+        return h;
+    }
+
+    function convertProductsToCards(text){
+        // Look for all [PRODUCT]JSON[/PRODUCT] patterns
+        const matches = [...text.matchAll(/\[PRODUCT\](.*?)\[\/PRODUCT\]/gs)];
+        if(matches.length === 0) return text;
+        
+        let productsHtml = '<div class="haminos-products-container"><div class="haminos-products-grid">';
+        let hasValidProduct = false;
+        
+        matches.forEach(match => {
+            try {
+                const jsonStr = match[1].trim();
+                const p = JSON.parse(jsonStr);
+                
+                // Extract handle from URL
+                const handleMatch = p.url ? p.url.match(/\/products\/([^/?#]+)/) : null;
+                const handle = handleMatch ? handleMatch[1] : "";
+                
+                hasValidProduct = true;
+                productsHtml += '<div class="haminos-product-card">';
+                productsHtml += '<img class="haminos-product-card-image" src="' + esc(p.img) + '" alt="' + esc(p.title) + '" onerror="this.style.display=\'none\'">';
+                productsHtml += '<div class="haminos-product-card-body">';
+                productsHtml += '<h4 class="haminos-product-card-title">' + esc(p.title) + '</h4>';
+                productsHtml += '<div class="haminos-product-card-price">' + esc(p.price) + '</div>';
+                productsHtml += '<p class="haminos-product-card-description">' + esc(p.desc) + '</p>';
+                productsHtml += '<div class="haminos-product-card-buttons">';
+                productsHtml += '<button onclick="haminosViewProduct(\'' + esc(handle) + '\',\'' + esc(p.title).replace(/'/g,"\\'") + '\',\'' + esc(p.url) + '\')" class="haminos-product-card-btn primary">Ver producto</button>';
+                productsHtml += '<button onclick="haminosAddToCart(\'' + esc(handle) + '\',\'' + esc(p.title).replace(/'/g,"\\'") + '\')" class="haminos-product-card-btn secondary">Añadir al carrito</button>';
+                productsHtml += '</div></div></div>';
+            } catch(e) {
+                console.error("Error parsing product JSON:", e);
+            }
+        });
+        
+        productsHtml += "</div>";
+        
+        // Add dots if more than one product
+        if (matches.length > 1) {
+            productsHtml += '<div class="haminos-carousel-dots">';
+            matches.forEach((_, idx) => {
+                productsHtml += `<button class="haminos-carousel-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></button>`;
+            });
+            productsHtml += '</div>';
+        }
+        
+        productsHtml += "</div>";
+        
+        // Replace the entire block that contained products
+        // We replace the text from the first match to the last match
+        const firstMatch = matches[0];
+        const lastMatch = matches[matches.length - 1];
+        const fullBlockStart = text.indexOf(firstMatch[0]);
+        const fullBlockEnd = text.lastIndexOf(lastMatch[0]) + lastMatch[0].length;
+        
+        if(!hasValidProduct) return text;
+        
+        return text.substring(0, fullBlockStart) + productsHtml + text.substring(fullBlockEnd);
+    }
+
+    function esc(text){if(!text)return"";const d=document.createElement("div");d.textContent=text;return d.innerHTML;}
+
+    t.addEventListener("click",()=>{const isOpen=o.classList.toggle("open");t.classList.toggle("open",isOpen);if(isOpen&&i.style.display==="none")a.focus();});
+    r.addEventListener("click",()=>{o.classList.remove("open");t.classList.remove("open");});
+    document.querySelectorAll(".haminos-quick-action-btn").forEach(btn=>{btn.addEventListener("click",()=>{i.style.display="none";sendMessage(btn.dataset.message);});});
+    s.addEventListener("click",()=>{const msg=a.value.trim();if(msg&&!isLoading)sendMessage(msg);});
+    a.addEventListener("keypress",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();const msg=a.value.trim();if(msg&&!isLoading)sendMessage(msg);}});
+    a.addEventListener("input",()=>{a.style.height="auto";a.style.height=Math.min(a.scrollHeight,100)+"px";});
+
+    async function sendMessage(message){
+        if(isLoading)return;
+        a.value="";a.style.height="auto";
+        if(i.style.display!=="none")i.style.display="none";
+        addMessage(message,"user");
+        isLoading=true;s.disabled=true;
+        const typing=document.createElement("div");
+        typing.className="haminos-typing-indicator";
+        typing.innerHTML="<span></span><span></span><span></span>";
+        n.appendChild(typing);n.scrollTop=n.scrollHeight;
+        try{
+            const res=await fetch(CONFIG.webhookUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chatInput:message,sessionId:sessionId,action:"sendMessage"})});
+            if(!res.ok)throw new Error("Error");
+            const data=await res.json();
+            typing.remove();
+            addMessage(data.output||data.text||data.message||"Lo siento, ha ocurrido un error.","bot");
+        }catch(e){typing.remove();addMessage("Lo siento, ha ocurrido un error. Por favor, intenta de nuevo.","bot");}
+        finally{isLoading=false;s.disabled=false;}
+    }
+
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&o.classList.contains("open")){o.classList.remove("open");t.classList.remove("open");}});
+
+    if(loadHistory()){restoreMessages();}
+    })();
+    </script>
+

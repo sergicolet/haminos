@@ -1,0 +1,21 @@
+su - postgres -c "psql -d db_data -U db_admin"
+
+-- TRUNCATE (limpiar datos de prueba)
+TRUNCATE TABLE haminos_chat_logs, haminos_chat_tracking RESTART IDENTITY CASCADE;
+TRUNCATE TABLE n8n_chat_histories RESTART IDENTITY CASCADE;
+
+-- CREAR TABLA MEMORIA CHAT (si no existe)
+CREATE TABLE IF NOT EXISTS n8n_chat_histories (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    role VARCHAR(50),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_n8n_chat_session ON n8n_chat_histories(session_id);
+
+-- FIX: Quitar NOT NULL de role (si ya existe la tabla con NOT NULL)
+ALTER TABLE n8n_chat_histories ALTER COLUMN role DROP NOT NULL;
+
+\q

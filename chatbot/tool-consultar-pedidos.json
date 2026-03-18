@@ -1,0 +1,131 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "identificador"
+            }
+          ]
+        }
+      },
+      "id": "212997a3-051e-4aa6-858d-79167d00524c",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Detectar si es email o número de pedido\nconst input = items[0].json.identificador.trim();\n\nlet tipo = 'email';\nlet valor = input;\n\nif (input.includes('@')) {\n  // Es un email\n  tipo = 'email';\n  valor = input;\n} else if (input.includes('#') || input.match(/^H?\\d+$/i) || input.toUpperCase().startsWith('H')) {\n  // Es un número de pedido (H#219901, #219901, H219901, 219901)\n  tipo = 'name';\n  valor = input;\n} else {\n  // No reconocido, intentamos como email por defecto\n  tipo = 'email';\n  valor = input;\n}\n\nreturn [{ json: { tipo, valor } }];"
+      },
+      "id": "e6e9ced0-c854-40ad-b51a-9abbe6417678",
+      "name": "Detectar Tipo Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://905f55-2.myshopify.com/admin/api/2025-10/orders.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "shopifyOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "={{ $json.tipo }}",
+              "value": "={{ $json.valor }}"
+            },
+            {
+              "name": "status",
+              "value": "any"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "fields",
+              "value": "name,email,financial_status,fulfillment_status,created_at,line_items,customer,fulfillments"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9a69f4ed-875b-428e-9a17-a9b02b84783f",
+      "name": "HTTP Request - Buscar Pedido",
+      "credentials": {
+        "shopifyOAuth2Api": {
+          "id": "IadC5aIBEpEgWWK8",
+          "name": "haminos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el body de la respuesta HTTP\nconst responseData = items[0].json;\n\n// Verificar si hay pedidos\nif (!responseData.orders || responseData.orders.length === 0) {\n  return [{\n    json: {\n      encontrado: false,\n      mensaje: \"No he encontrado ningún pedido con ese dato. Revisa que esté bien escrito.\"\n    }\n  }];\n}\n\n// Tomamos el primer pedido encontrado\nconst order = responseData.orders[0];\nconst fulfillment = order.fulfillments && order.fulfillments.length > 0 ? order.fulfillments[0] : null;\n\n// Lógica de estados basada en financial_status y fulfillment_status\nlet estado_texto = \"\";\nlet tracking_url = \"\";\nlet tracking_number = \"\";\n\n// Primero verificamos financial_status (tiene prioridad)\nif (order.financial_status === 'refunded') {\n  estado_texto = \"Reembolsado\";\n} else if (order.financial_status === 'voided') {\n  // Voided = pago anulado (ej: contra reembolso no recogido)\n  estado_texto = \"Cancelado\";\n} else if (order.cancelled_at) {\n  estado_texto = \"Cancelado\";\n} else if (order.fulfillment_status === 'fulfilled' && fulfillment) {\n  // Pedido enviado - tiene tracking\n  estado_texto = \"Enviado\";\n  tracking_number = fulfillment.tracking_number || \"\";\n  // Construir URL de CTT\n  if (tracking_number) {\n    tracking_url = `https://www.cttexpress.com/localizador-de-envios/?sc=${tracking_number}`;\n  }\n} else if (order.fulfillment_status === null) {\n  // Pedido no preparado aún\n  estado_texto = \"En preparación\";\n} else {\n  estado_texto = \"En proceso\";\n}\n\n// Construir mensaje final\nlet mensaje_final = \"\";\nif (estado_texto === \"Enviado\" && tracking_url) {\n  mensaje_final = `Tu pedido ${order.name} ya ha sido enviado. Puedes hacer seguimiento aquí: ${tracking_url}`;\n} else if (estado_texto === \"En preparación\") {\n  mensaje_final = `Tu pedido ${order.name} está en preparación en nuestro almacén. En breve recibirás un email con el número de seguimiento.`;\n} else if (estado_texto === \"Cancelado\") {\n  mensaje_final = `Tu pedido ${order.name} ha sido cancelado. Si tienes dudas sobre el motivo, por favor contacta con soporte.`;\n} else if (estado_texto === \"Reembolsado\") {\n  mensaje_final = `Tu pedido ${order.name} ha sido reembolsado. El dinero debería aparecer en tu cuenta en unos días.`;\n} else {\n  mensaje_final = `Tu pedido ${order.name} está actualmente: ${estado_texto}.`;\n}\n\nreturn [{\n  json: {\n    encontrado: true,\n    numero_pedido: order.name,\n    email: order.email,\n    estado_envio: estado_texto,\n    tracking_number: tracking_number,\n    tracking_url: tracking_url,\n    cliente: order.customer ? order.customer.first_name : \"Cliente\",\n    fecha_pedido: order.created_at.split('T')[0],\n    mensaje_final: mensaje_final\n  }\n}];"
+      },
+      "id": "e468773b-f8fa-4862-b76d-ff5288dd6f17",
+      "name": "Formatear Respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Detectar Tipo Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Tipo Input": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Buscar Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Buscar Pedido": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "1c2aee663286167ca5973273ceb0c60aa2fcbae95195db0810f62f8c4797daff"
+  }
+}

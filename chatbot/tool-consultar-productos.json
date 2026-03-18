@@ -1,0 +1,376 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "intencio_de_usuario"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        -288
+      ],
+      "id": "98ca740a-97e8-41cd-958e-dc9983e06c71",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=Eres un experto en el catálogo de HAMINOS.\nRecibirás una LISTA DE PRODUCTOS disponibles y una búsqueda del usuario.\nTU TAREA: Seleccionar de esa lista los IDs de los productos que mejor encajen, basándote en sus TÍTULOS y descripciones.\n\n## 🚨 REGLAS DE SELECCIÓN (JERARQUÍA ESTRICTA)\n\n### 🥇 PRIORIDAD 1: PETICIONES ESPECÍFICAS (Componentes Sueltos)\n**Cuándo:** Si la búsqueda menciona: \"separado\", \"suelto\", \"roller\", \"rodillo\", \"serum\", \"bote\", \"líquido\", \"recambio\", \"sin el pack\".\n**Acción:** BUSCA EN LA LISTA PRODUCTOS INDIVIDUALES (Ignora los que digan \"PACK\").\n\n1.  **Si pide \"Roller\" o \"Rodillo\":**\n    - Busca productos con \"Derma roller\" o \"Head\" en el título.\n    - **Contexto:** Si menciona \"Labios\"/\"Mujer\"/\"Rosa\" -> Prioriza el que diga \"Pink\" o \"Rosa\". Si es \"Barba\"/\"Hombre\" -> Prioriza \"Black\" o \"Negro\".\n    - ⚠️ **AVISO:** El \"Derma roller con depósito\" NO cuenta como sérum.\n\n2.  **Si pide \"Sérum\", \"Líquido\" o \"Bote\":**\n    - Busca productos con \"Serum\", \"Acid\", \"Growth\" o \"Vitamin\" en el título.\n    - **Labios/Arrugas** -> Busca \"Hyaluronic Acid\".\n    - **Barba/Pelo** -> Busca \"Hair Growth\".\n    - **Manchas/Luz** -> Busca \"Vitamin C\".\n    - ❌ **PROHIBIDO:** No devuelvas el \"Derma roller\" si pide sérum.\n\n### 🥈 PRIORIDAD 2: CONSULTAS GENÉRICAS (Packs o Tratamientos)\n**Cuándo:** Si la búsqueda es vaga (\"algo para...\", \"tratamiento...\", \"crecimiento\", \"quiero mis labios bonitos\") y NO pide explícitamente \"suelto\".\n**Acción:** PRIORIZA los productos cuyo título contenga **\"PACK\"**.\n- **Barba/Crecimiento** -> Busca \"Pack Crecimiento\" o \"Growth Pack\".\n- **Labios** -> Busca \"Pack Labios\" o \"Lips Pack\".\n- **Arrugas** -> Busca \"Anti-aging Pack\".\n\n## Output\nDevuelve JSON Array de objetos:\n`[{\"id\": \"ID_ENCONTRADO_EN_LA_LISTA\", \"justification\": \"He elegido X porque su titulo coincide con Y...\"}]`"
+            },
+            {
+              "content": "=QUERY:\n{{ $('When Executed by Another Workflow').item.json.intencio_de_usuario }}\n\nPRODUCTOS DISPONIBLES (Formato JSON):\n{{ JSON.stringify($json.products) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        -288
+      ],
+      "id": "d95831b0-dfb4-415a-a54e-f68cd80548f3",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "1MaHDKdD55sbyLF8",
+          "name": "haminos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "graphqlQuery": "query getSpainProducts($query: String!) {\n  products(first: 250, query: $query) {\n    edges {\n      node {\n        id\n        title\n        handle\n        description\n        tags\n      }\n    }\n  }\n}",
+        "graphqlQueryVariables": "={\n  \"query\": \"status:active AND tag:SPAIN\"\n}"
+      },
+      "type": "n8n-nodes-shopify-graphql.shopifyGraphql",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -288
+      ],
+      "id": "bbac72c2-2669-4685-acb6-89c6f30c4d4b",
+      "name": "Bulk Query NAMASTE1",
+      "credentials": {
+        "shopifyOAuth2Api": {
+          "id": "IadC5aIBEpEgWWK8",
+          "name": "haminos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.products.edges",
+        "options": {}
+      },
+      "id": "3cb46b21-4e4b-48f2-9969-240881263b49",
+      "name": "separar",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4ac0441c-5bd3-4f11-8b87-e1e9ded28bfe",
+              "name": "products.id",
+              "value": "={{ $json.node.id }}",
+              "type": "string"
+            },
+            {
+              "id": "50dc7e2e-3919-4083-a33c-badc2cf43d5a",
+              "name": "products.title",
+              "value": "={{ $json.node.title }}",
+              "type": "string"
+            },
+            {
+              "id": "bb666ede-c07f-46c0-9c00-860ca8589e1d",
+              "name": "products.description",
+              "value": "={{ $json.node.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        -288
+      ],
+      "id": "331fb885-03c5-457a-9d5d-92551a3e7376",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "products"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -288
+      ],
+      "id": "4efbf4dc-0b08-4c61-b54b-eb307f2cb836",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "id",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -288
+      ],
+      "id": "321b4bf2-753a-482b-ada5-be06ff43be81",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "graphqlQuery": "query getDetails($id: ID!) {\n  product(id: $id) {\n    id\n    title\n    handle\n    description\n    featuredImage {\n      url\n    }\n    variants(first: 1) {\n      edges {\n        node {\n          id\n          price\n        }\n      }\n    }\n  }\n}",
+        "graphqlQueryVariables": "={\n  \"id\": \"{{ $json.id }}\"\n}"
+      },
+      "type": "n8n-nodes-shopify-graphql.shopifyGraphql",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -288
+      ],
+      "id": "f891f121-781a-4a9a-baba-ff6c05780f91",
+      "name": "Bulk Query NAMASTE",
+      "credentials": {
+        "shopifyOAuth2Api": {
+          "id": "IadC5aIBEpEgWWK8",
+          "name": "haminos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $json.output[0].content[0].text;\n// Esto convierte el texto de la IA en un objeto real de JS\nconst cleanJson = JSON.parse(rawText); \n\n// Importante: Si la IA devuelve un objeto solo, lo metemos en un array\nreturn Array.isArray(cleanJson) ? cleanJson : [cleanJson];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -288
+      ],
+      "id": "72d7c499-6971-4592-aafc-0ac5b48f4317",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2ab1e43c-b02f-4d4c-8122-ba284575b14b",
+              "name": "id",
+              "value": "={{ $json.data.product.id.split('/').pop() }}",
+              "type": "string"
+            },
+            {
+              "id": "ecb15f67-2505-4950-a997-3a9fab3fa2bb",
+              "name": "title",
+              "value": "={{ $json.data.product.title }}",
+              "type": "string"
+            },
+            {
+              "id": "1192d198-1100-4085-a7a6-6a68e28d7371",
+              "name": "price",
+              "value": "={{ $json.data.product.variants.edges[0].node.price }}",
+              "type": "string"
+            },
+            {
+              "id": "ff18b557-71b2-4544-83fc-0b8a63da4860",
+              "name": "description",
+              "value": "={{ $json.data.product.description }}",
+              "type": "string"
+            },
+            {
+              "id": "32ed6f5e-7189-4ed5-9845-56b1925d940c",
+              "name": "Image_url",
+              "value": "={{ $json.data.product.featuredImage.url }}",
+              "type": "string"
+            },
+            {
+              "id": "1e75afec-c5a9-4754-8372-4e7986cc9b7f",
+              "name": "justification",
+              "value": "={{ $('Split Out').item.json.justification }}",
+              "type": "string"
+            },
+            {
+              "id": "97d5a63c-5c28-4f6c-bc80-5aa5685cb437",
+              "name": "add_to_cart",
+              "value": "={{ 'https://haminos.es/cart/add?id=' + $json.data.product.variants.edges[0].node.id.split('/').pop() + '&quantity=1' }}",
+              "type": "string"
+            },
+            {
+              "id": "be95ca9f-1d2d-4e1a-9d69-2e30d4d1070e",
+              "name": "justification",
+              "value": "={{ $('Split Out').item.json.justification }}",
+              "type": "string"
+            },
+            {
+              "id": "94625f8f-5db8-488c-acaf-2310fc4e91fc",
+              "name": "product_ur",
+              "value": "={{ 'https://haminos.es/products/' + $json.data.product.handle }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1568,
+        -288
+      ],
+      "id": "cb206d40-4e9a-479a-82dd-d769a9ed8c8a",
+      "name": "Edit Fields1"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Bulk Query NAMASTE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk Query NAMASTE1": {
+      "main": [
+        [
+          {
+            "node": "separar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "separar": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Bulk Query NAMASTE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk Query NAMASTE": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c2aee663286167ca5973273ceb0c60aa2fcbae95195db0810f62f8c4797daff"
+  }
+}

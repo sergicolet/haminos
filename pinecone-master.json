@@ -1,0 +1,327 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "workflowInputs": {
+                    "values": [
+                        {
+                            "name": "action",
+                            "description": "sync"
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.executeWorkflowTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                -400,
+                0
+            ],
+            "id": "sync-trigger",
+            "name": "Sync Manual Entry"
+        },
+        {
+            "parameters": {
+                "jsCode": "return [\n  {\n    json: {\n      text: `# Base de Conocimiento Haminos\n\nEste documento sirve como base de conocimiento centralizada para Haminos...\n` \n    }\n  }\n];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -200,
+                0
+            ],
+            "id": "base-markdown",
+            "name": "Base de Conocimiento (Markdown)"
+        },
+        {
+            "parameters": {
+                "mode": "insert",
+                "pineconeIndex": {
+                    "__rl": true,
+                    "value": "haminos",
+                    "mode": "list"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+            "typeVersion": 1.3,
+            "position": [
+                200,
+                0
+            ],
+            "id": "pinecone-insert",
+            "name": "Pinecone: Insertar Todo",
+            "credentials": {
+                "pineconeApi": {
+                    "id": "kQllhf9OAC0IhH6S",
+                    "name": "HAMINOS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "public": true,
+                "mode": "webhook",
+                "options": {
+                    "responseMode": "responseNode"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+            "typeVersion": 1.4,
+            "position": [
+                -800,
+                500
+            ],
+            "id": "chat-trigger",
+            "name": "When chat message received",
+            "webhookId": "conocimiento-haminos"
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "Eres el Agente de Haminos. \n\nInstrucciones de reescritura:\n1. Si el usuario pide cambiar info, usa la herramienta 'actualizar_conocimiento'. \n2. La herramienta te pedirá el contenido y lo reescribirá en Pinecone usando el ID coincidente.\n3. Confirma siempre al usuario cuando el cambio se haya realizado."
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.7,
+            "position": [
+                -550,
+                500
+            ],
+            "id": "ai-agent",
+            "name": "Agente GPT-4o"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-4o-mini",
+                    "mode": "list"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.3,
+            "position": [
+                -650,
+                700
+            ],
+            "id": "gpt-4o-mini",
+            "name": "OpenAI Chat Model",
+            "credentials": {
+                "openAiApi": {
+                    "id": "1MaHDKdD55sbyLF8",
+                    "name": "haminos"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "mode": "retrieve-as-tool",
+                "pineconeIndex": {
+                    "__rl": true,
+                    "value": "haminos",
+                    "mode": "list"
+                },
+                "topK": 3
+            },
+            "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+            "typeVersion": 1.3,
+            "position": [
+                -450,
+                750
+            ],
+            "id": "pinecone-tool",
+            "name": "Consultar Conocimiento",
+            "credentials": {
+                "pineconeApi": {
+                    "id": "kQllhf9OAC0IhH6S",
+                    "name": "HAMINOS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "name": "actualizar_conocimiento",
+                "description": "Busca un documento por similitud y reescribe su contenido COMPLETAMENTE. Úsala cuando el usuario quiera cambiar o corregir algo.",
+                "workflowInputs": {
+                    "values": [
+                        {
+                            "name": "query_busqueda",
+                            "description": "Texto para encontrar el documento a cambiar"
+                        },
+                        {
+                            "name": "nuevo_texto",
+                            "description": "El contenido final que reemplazará al viejo"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+            "typeVersion": 2,
+            "position": [
+                -300,
+                700
+            ],
+            "id": "update-tool",
+            "name": "Tool: Actualizar"
+        },
+        {
+            "parameters": {
+                "operation": "getManyranked",
+                "topK": 1,
+                "options": {
+                    "includeMetadata": true
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+            "typeVersion": 1,
+            "position": [
+                50,
+                700
+            ],
+            "id": "find-id",
+            "name": "Buscar ID para Editar",
+            "credentials": {
+                "pineconeApi": {
+                    "id": "kQllhf9OAC0IhH6S",
+                    "name": "HAMINOS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "update",
+                "documentId": "={{ $json.id }}",
+                "updateValues": {
+                    "values": [
+                        {
+                            "name": "text",
+                            "value": "={{ $('Tool: Actualizar').item.json.nuevo_texto }}"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+            "typeVersion": 1,
+            "position": [
+                250,
+                700
+            ],
+            "id": "rewrite",
+            "name": "Reescribir"
+        },
+        {
+            "parameters": {
+                "schema": {
+                    "__rl": true,
+                    "value": "public",
+                    "mode": "list"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "haminos_chat_logs",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "session_id": "={{ $('When chat message received').item.json.sessionId }}",
+                        "message": "={{ $json.output }}",
+                        "sender": "bot",
+                        "timestamp": "={{ $now }}"
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.5,
+            "position": [
+                -300,
+                500
+            ],
+            "id": "log-db",
+            "name": "Hetzner: Log Chat",
+            "credentials": {
+                "postgres": {
+                    "id": "cZVrsfhEgGznp2xV",
+                    "name": "HAMINOS Hetzner"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "When chat message received": {
+            "main": [
+                [
+                    {
+                        "node": "Agente GPT-4o",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agente GPT-4o": {
+            "main": [
+                [
+                    {
+                        "node": "Hetzner: Log Chat",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Agente GPT-4o",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Consultar Conocimiento": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "Agente GPT-4o",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Actualizar": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "Agente GPT-4o",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ],
+            "main": [
+                [
+                    {
+                        "node": "Buscar ID para Editar",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Buscar ID para Editar": {
+            "main": [
+                [
+                    {
+                        "node": "Reescribir",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

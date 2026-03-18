@@ -1,0 +1,182 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "haminos",
+          "mode": "list",
+          "cachedResultName": "haminos"
+        },
+        "options": {}
+      },
+      "id": "594d69aa-9e38-422c-acae-9c15b9ebe46d",
+      "name": "Pinecone Search",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        352,
+        432
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "kQllhf9OAC0IhH6S",
+          "name": "HAMINOS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.6,
+      "position": [
+        256,
+        0
+      ],
+      "id": "8f2e9a01-6bce-4bfd-aad3-41bcde3ef48e",
+      "name": "Question and Answer Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "id": "c650d67e-4da0-46e1-9182-4a1921358bdb",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ML7KcA8XW03k9hdz",
+          "name": "haminos"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [
+        352,
+        224
+      ],
+      "id": "389550b8-7584-45f4-a3df-0321c991406d",
+      "name": "Vector Store Retriever"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "db114a4d-3ef3-4a85-bfe9-35c2ab4d2d69",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 768
+        }
+      },
+      "type": "n8n-nodes-gemini-embedding-plus.embeddingsGoogleGeminiPlus",
+      "typeVersion": 1,
+      "position": [
+        288,
+        592
+      ],
+      "id": "1c513f85-6c8b-4778-9ac4-1db44bda9092",
+      "name": "Embeddings Google Gemini Plus",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ML7KcA8XW03k9hdz",
+          "name": "haminos"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Pinecone Search": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Retriever",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Retriever": {
+      "ai_retriever": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini Plus": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "query": "pago contrareembolso"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c2aee663286167ca5973273ceb0c60aa2fcbae95195db0810f62f8c4797daff"
+  }
+}
