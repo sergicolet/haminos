@@ -19,7 +19,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     const idToken = credentials.idToken as string;
                     
                     // 1. Verificamos el token con Firebase Admin (garantiza que el link o Google Auth es legítimo y seguro)
-                    const decodedToken = await adminAuth.verifyIdToken(idToken);
+                    const decodedToken = await adminAuth().verifyIdToken(idToken);
                     const email = decodedToken.email;
 
                     if (!email) {
@@ -28,7 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
 
                     // 2. Buscamos si el usuario existe en la colección 'users' de Firestore
-                    const usersRef = adminDb.collection('users');
+                    const usersRef = adminDb().collection('users');
                     const snapshot = await usersRef.where('email', '==', email).limit(1).get();
 
                     if (snapshot.empty) {

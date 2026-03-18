@@ -7,7 +7,7 @@ export async function GET() {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
     // Obtenemos del chatbot todos los logs de los últimos 7 días
-    const snapshotLogs = await adminDb.collection('haminos_chat_logs')
+    const snapshotLogs = await adminDb().collection('haminos_chat_logs')
       .where('timestamp', '>=', sevenDaysAgo.toISOString())
       .get();
 
@@ -57,7 +57,7 @@ export async function GET() {
     })).sort((a, b) => b.value - a.value);
 
     // Conteo total masivo y ultra-rápido de enventos en Firebase (Count Aggregation API)
-    const trackingSnapshot = await adminDb.collection('haminos_tracking_events').count().get();
+    const trackingSnapshot = await adminDb().collection('haminos_tracking_events').count().get();
     const trackingTotal = trackingSnapshot.data().count;
 
     return NextResponse.json({
