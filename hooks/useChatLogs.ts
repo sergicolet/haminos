@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { startOfDay, endOfDay } from 'date-fns'
+import { startOfDay, endOfDay, subDays, startOfWeek, startOfMonth } from 'date-fns'
 import type { ChatLog, Session, KPIData } from '@/lib/types'
 
 interface Filters {
   dateRange?: { from: Date; to: Date }
+  timeRange?: '7d' | '30d' | 'thisMonth' | 'thisWeek'
   category?: string
   intention?: string
   searchQuery?: string
@@ -65,16 +66,25 @@ export function useChatLogs(filters: Filters = {}) {
     fetchData()
   }, [fetchData])
 
-  // Apply dateRange filter (no range = all logs)
+  // Apply filter: dateRange takes priority over timeRange; no filter = all logs
   const filteredLogs = useCallback((): ChatLog[] => {
-    if (!filters.dateRange?.from) return logs
-    const from = startOfDay(filters.dateRange.from)
-    const to = endOfDay(filters.dateRange.to ?? filters.dateRange.from)
-    return logs.filter(l => {
-      const d = l.date.toDate()
-      return d >= from && d <= to
-    })
-  }, [logs, filters.dateRange])
+    if (filters.dateRange?.from) {
+      const from = startOfDay(filters.dateRange.from)
+      const to = endOfDay(filters.dateRange.to ?? filters.dateRange.from)
+      return logs.filter(l => {
+        const d = l.date.toDate()
+        return d >= from && d <= to
+      })
+    }
+    const now = new Date()
+    let from: Date | null = null
+    if (filters.timeRange === '7d')       from = startOfDay(subDays(now, 6))
+    else if (filters.timeRange === '30d') from = startOfDay(subDays(now, 29))
+    else if (filters.timeRange === 'thisWeek')  from = startOfWeek(now, { weekStartsOn: 1 })
+    else if (filters.timeRange === 'thisMonth') from = startOfMonth(now)
+    if (!from) return logs
+    return logs.filter(l => l.date.toDate() >= from!)
+  }, [logs, filters.dateRange, filters.timeRange])
 
   const sessions = useCallback((): Session[] => {
     const sessionMap = new Map<string, Session>()
