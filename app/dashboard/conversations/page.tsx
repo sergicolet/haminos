@@ -49,8 +49,7 @@ export default function ConversationsPage() {
     category?: string
     intention?: string
     searchQuery?: string
-    timeRange: "7d" | "30d" | "thisMonth" | "thisWeek" | "custom"
-  }>({ timeRange: "7d" })
+  }>({})
 
   const [selectedSession, setSelectedSession] = React.useState<string | null>(null)
   const [panelOpen, setPanelOpen] = React.useState(false)

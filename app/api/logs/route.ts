@@ -3,10 +3,10 @@ import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET() {
     try {
-        // Obtenemos los últimos 100 logs de Firestore
+        // Obtenemos los últimos 1000 logs de Firestore
         const snapshot = await adminDb().collection('haminos_chat_logs')
             .orderBy('timestamp', 'desc')
-            .limit(100)
+            .limit(1000)
             .get();
 
         const logsBySession: Record<string, any> = {};
