@@ -1,0 +1,219 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "haminos-ai-analyze",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        3984,
+        -592
+      ],
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Webhook",
+      "webhookId": "haminos-ai-analyze-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst trigger = $node[\"Webhook\"].json.body || {};\n\n// Helper to unwrap Firestore REST values\nconst unwrap = (val) => {\n  if (!val) return null;\n  if (val.stringValue) return val.stringValue;\n  if (val.timestampValue) return val.timestampValue;\n  if (val.integerValue) return parseInt(val.integerValue);\n  if (val.booleanValue !== undefined) return val.booleanValue;\n  return null;\n};\n\nconst sessionsMap = {};\n\nitems.forEach(item => {\n  const doc = item.json.document;\n  if (!doc || !doc.fields) return;\n  \n  const fields = doc.fields;\n  const chatInput = unwrap(fields.message);\n  const message = unwrap(fields.bot_response);\n  const date = unwrap(fields.timestamp);\n  const sessionKey = unwrap(fields.session_id);\n  \n  if (!sessionKey) return;\n  \n  if (!sessionsMap[sessionKey]) sessionsMap[sessionKey] = [];\n  \n  const formattedMsg = `[${new Date(date).toLocaleString('es-AR')}]\\n` +\n    `USUARIO: ${chatInput || '(sin entrada)'}\\n` +\n    `BOT: ${message || '(sin respuesta)'}\\n` +\n    `---`;\n\n  sessionsMap[sessionKey].push(formattedMsg);\n});\n\nconst sessionsArray = Object.entries(sessionsMap).map(([sessionId, msgs]) => ({\n  sessionId,\n  fullConversation: `# CONVERSACIÓN ${sessionId}\\n\\n${msgs.join('\\n')}`\n}));\n\nreturn {\n  json: {\n    sessions: sessionsArray,\n    fullConversation: sessionsArray.length > 0 \n      ? sessionsArray.map(s => s.fullConversation).join('\\n\\n')\n      : \"No se encontraron logs de chat para los criterios seleccionados.\",\n    type: trigger.type,\n    customPrompt: trigger.customPrompt || '',\n    sessionIds: trigger.sessionIds || []\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4432,
+        -592
+      ],
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Formatear para IA"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "projectId": "YOUR_FIREBASE_PROJECT_ID",
+        "collection": "ai_reports",
+        "columns": "text,type,datetime,period"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1,
+      "position": [
+        5232,
+        -592
+      ],
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "Guardar en ai_reports",
+      "credentials": {
+        "googleFirebaseCloudFirestoreOAuth2Api": {
+          "id": "YOUR_FIRESTORE_CREDENTIAL_ID",
+          "name": "Haminos Firebase Firestore"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "text-field-id",
+              "name": "text",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "datetime-field-id",
+              "name": "datetime",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "type-field-id",
+              "name": "type",
+              "value": "={{ $(\"Webhook\").item.json.body.type }}",
+              "type": "string"
+            },
+            {
+              "id": "period-field-id",
+              "name": "period",
+              "value": "={{ $(\"Webhook\").item.json.body.type === 'manual_selection' ? 'Selección manual (' + $(\"Webhook\").item.json.body.sessionIds.length + ' ses.)' : ($(\"Webhook\").item.json.body.startDate ? $(\"Webhook\").item.json.body.startDate.split('T')[0] : 'Todo') + ' - ' + $(\"Webhook\").item.json.body.timestamp.split('T')[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5008,
+        -592
+      ],
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://firestore.googleapis.com/v1/projects/YOUR_FIREBASE_PROJECT_ID/databases/(default)/documents:runQuery",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleFirebaseCloudFirestoreOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"structuredQuery\":{\"from\":[{\"collectionId\":\"haminos_chat_logs\"}],\"where\":{{ $(\"Webhook\").item.json.body.type === \"manual_selection\" && $(\"Webhook\").item.json.body.sessionIds?.length > 0 ? JSON.stringify({ fieldFilter: { field: { fieldPath: \"session_id\" }, op: \"IN\", value: { arrayValue: { values: $(\"Webhook\").item.json.body.sessionIds.slice(0, 30).map(id => ({ stringValue: id })) } } } }) : JSON.stringify({ fieldFilter: { field: { fieldPath: \"timestamp\" }, op: \"GREATER_THAN_OR_EQUAL\", value: { timestampValue: $(\"Webhook\").item.json.body.startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() } } }) }},\"orderBy\":[{\"field\":{\"fieldPath\":\"timestamp\"},\"direction\":\"ASCENDING\"}]}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4208,
+        -592
+      ],
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Get Logs (HTTP)",
+      "credentials": {
+        "googleFirebaseCloudFirestoreOAuth2Api": {
+          "id": "YOUR_FIRESTORE_CREDENTIAL_ID",
+          "name": "Haminos Firebase Firestore"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.toJsonString() }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "systemMessage": "=Eres un analista experto en atención al cliente para HAMINOS®. Tu misión es extraer insights de los logs de chat proporcionados.\n\nDEBES ESTRUCTURAR TU RESPUESTA USANDO ESTAS ETIQUETAS EXACTAS:\n\n[ANALISIS]\nAquí escribe el análisis detallado de las conversaciones. Identifica dudas frecuentes, sentimientos de los clientes, problemas con envíos y productos más demandados. Usa Markdown con negritas y listas.\n\nIMPORTANTE: Para cada punto, observación o conclusión en el [ANALISIS], DEBES indicar al final de la frase o párrafo los session IDs de donde se extrajo esa información usando el formato exacto: [[sessionId]] o [[sessionId1, sessionId2]]. Ej: \"Muchos clientes preguntan por el derma roller para barba [[session_abc123, session_def456]].\"\n\n[SUGERENCIAS]\nAquí escribe una lista de acciones concretas y sugerencias de mejora para el negocio basadas en los datos analizados.\n\nMODO DE ANÁLISIS: {{ $json.type === 'daily_summary' ? 'RESUMEN GENERAL' : 'INVESTIGACIÓN ESPECÍFICA' }}\n\nREGLAS: {{ $json.type === 'daily_summary' ? 'Analiza todas las interacciones del periodo para encontrar patrones de comportamiento.' : 'Analiza detalladamente las conversaciones seleccionadas para extraer el máximo valor de cada una. ' + ($json.customPrompt ? 'Responde específicamente a esta petición: ' + $json.customPrompt : '') }}\n\nUsa un tono profesional, directo y orientado a resultados.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        4656,
+        -592
+      ],
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Haminos Gemini"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Logs (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear para IA": {
+      "main": [
+        [
+          {
+            "node": "Google Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Guardar en ai_reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Logs (HTTP)": {
+      "main": [
+        [
+          {
+            "node": "Formatear para IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "haminos-analisis-report-workflow"
+  }
+}

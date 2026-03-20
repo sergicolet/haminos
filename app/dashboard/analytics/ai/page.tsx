@@ -203,9 +203,9 @@ export default function AIAnalysisPage() {
   }
 
   const renderCitationsInText = (text: string, keyPrefix: string | number = 'text') => {
-    const parts = text.split(/(\[\[[a-zA-Z0-9_, ]+\]\])/g)
+    const parts = text.split(/(\[\[[a-zA-Z0-9_\-, ]+\]\])/g)
     return parts.map((part, i) => {
-      const match = part.match(/\[\[([a-zA-Z0-9_, ]+)\]\]/)
+      const match = part.match(/\[\[([a-zA-Z0-9_\-, ]+)\]\]/)
       if (match) {
         const ids = match[1].split(',').map(id => id.trim())
         return (
@@ -218,7 +218,7 @@ export default function AIAnalysisPage() {
                 title={`Ver conversación ${id}`}
               >
                 <IconExternalLink className="size-2.5" />
-                {id.split('_')[1] || id}
+                {id.split(/[_-]/)[1] || id}
               </button>
             ))}
           </span>
