@@ -8,7 +8,7 @@ export async function GET() {
     const listResults = await index.listPaginated({ limit: 100 });
     
     const rawIds = listResults.vectors?.map((v) => v.id) || [];
-    const ids = Array.from(new Set(rawIds)).filter(id => typeof id === 'string' && id.trim().length > 0);
+    const ids = Array.from(new Set(rawIds)).filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
     
     if (ids.length === 0) {
       return NextResponse.json([]);
