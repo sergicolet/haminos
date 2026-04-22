@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   IconChartBar,
   IconDashboard,
+  IconDatabase,
   IconMessage,
   IconSparkles,
 } from "@tabler/icons-react"
@@ -38,6 +39,11 @@ const navMain = [
     title: "Analítica",
     url: "/dashboard/analytics",
     icon: IconChartBar,
+  },
+  {
+    title: "Knowledge",
+    url: "/dashboard/knowledge",
+    icon: IconDatabase,
   },
   {
     title: "Conversaciones",
