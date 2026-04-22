@@ -90,12 +90,12 @@ export async function DELETE(req: Request) {
         const body = await req.json().catch(() => ({}));
         if (!body.id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const index = getIndex();
-        await index.deleteOne(body.id);
+        await (index as any).deleteOne(body.id);
         return NextResponse.json({ success: true });
     }
 
     const index = getIndex();
-    await index.deleteOne(id);
+    await (index as any).deleteOne(id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
