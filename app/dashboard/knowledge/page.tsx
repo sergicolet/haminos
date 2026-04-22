@@ -210,7 +210,7 @@ export default function KnowledgePage() {
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(entry)} title="Editar">
                             <IconEdit className="size-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(entry)} className="text-destructive hover:text-destructive hover:bg-destructive/10" title="Eliminar">
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(entry.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10" title="Eliminar">
                             <IconTrash className="size-4" />
                           </Button>
                         </div>
